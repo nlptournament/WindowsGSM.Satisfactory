@@ -19,6 +19,22 @@ https://store.steampowered.com/app/1690800/Satisfactory_Survival/
 2. Move **Satisfactory.cs** folder to plugins folder
 3. Click **[RELOAD PLUGINS]** button or restart WindowsGSM
 
+# Ports
+
+| Port | Protocol | Purpose |
+| ---- | -------- | ------- |
+| 7777 | TCP + UDP | Game port, also the HTTPS API (`/api/v1`) |
+| 8888 | TCP | Messaging (reliable) port, set in the WindowsGSM **Query Port** field |
+
+The old query port (15777) and beacon port (15000) are no longer used. Open the ports above in your firewall.
+
+# Features
+
+- Launches with `-Port`, `-ReliablePort` and `-ExternalReliablePort`
+- Max players is applied through `-ini` overrides
+- Server IP is passed as `-multihome` when set
+- No A2S query (the server no longer supports it)
+
 # Settings
 
 1. Open game and connect
