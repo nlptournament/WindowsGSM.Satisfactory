@@ -30,6 +30,7 @@ namespace WindowsGSM.Plugins
         public override string AppId => "1690800"; // Game server appId Steam
         // Latest experimental branch 
         //public override string AppId => "1690800 -beta experimental"; // Game server appId Steam with experimental
+        // Alternatively add "-beta experimental" in the WindowsGSM update/install custom parameter
         
 
 
@@ -45,13 +46,12 @@ namespace WindowsGSM.Plugins
         public bool AllowsEmbedConsole = true;  // Does this server support output redirect?
         public int PortIncrements = 1; // This tells WindowsGSM how many ports should skip after installation
 
-        // TODO: Undisclosed method
-        public object QueryMethod = new A2S(); // Query method should be use on current server type. Accepted value: null or new A2S() or new FIVEM() or new UT3()
+        // The server no longer exposes a Steam query port, so A2S cannot be used
+        public object QueryMethod = null; // Query method should be use on current server type. Accepted value: null or new A2S() or new FIVEM() or new UT3()
 
         // - Game server default values
-        public string Port = "7777"; // Default port
-        public string QueryPort = "15777"; // Default query port. This is the port specified in the Server Manager in the client UI to establish a server connection.
-        public string BeaconPort = "15000"; // Default beacon port. This port currently cannot be set freely.
+        public string Port = "7777"; // Default game port (TCP+UDP). Also serves the HTTPS API (/api/v1)
+        public string QueryPort = "8888"; // WindowsGSM's query port field is used as the messaging (reliable) port, TCP
         
         // TODO: Unsupported option
         public string Defaultmap = "Dedicated"; // Default map name
@@ -82,9 +82,13 @@ namespace WindowsGSM.Plugins
             string param = "FactoryGame -log -unattended";
             param += $" {_serverData.ServerParam}";
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -Port={_serverData.ServerPort}"; 
-            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -ServerQueryPort={_serverData.ServerQueryPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -MaxPlayers={_serverData.ServerMaxPlayer}";
-            //param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -Multihome={_serverData.ServerIP}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -ReliablePort={_serverData.ServerQueryPort} -ExternalReliablePort={_serverData.ServerQueryPort}";
+            if (!string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer))
+            {
+                param += $" -ini:Game:[/Script/Engine.GameSession]:MaxPlayers={_serverData.ServerMaxPlayer}";
+                param += $" -ini:GameUserSettings:[/Script/Engine.GameSession]:MaxPlayers={_serverData.ServerMaxPlayer}";
+            }
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -multihome={_serverData.ServerIP}";
 
             // Prepare Process
             var p = new Process
